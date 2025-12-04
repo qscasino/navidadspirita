@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario Festivo — Arkana Games</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600&family=Teko:wght@500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Updated color palette to burgundy/red/gold Christmas theme */
+    :root {
+      --gold: #FFD700;
+      --gold-dark: #C5A028;
+      --gold-soft: #F4E4C1;
+      --gold-accent: #FFF8DC;
+
+      --burgundy: #800020;
+      --burgundy-dark: #5C0011;
+      --deep-red: #A52A2A;
+      --christmas-red: #C41E3A;
+      --dark-red: #8B0000;
+
+      --cream: #FFF8F0;
+      --white: #FFFFFF;
+      --warm-beige: #F5E6D3;
+
+      --ff-body: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --ff-display: 'Cinzel', serif;
+      --ff-ui: 'Teko', sans-serif;
+    }
+
+    body {
+      font-family: var(--ff-body);
+      /* Christmas burgundy/red gradient background */
+      background: 
+        radial-gradient(1200px 700px at 50% -10%, rgba(255,215,0,.15), transparent 60%),
+        radial-gradient(900px 600px at 80% 100%, rgba(196,30,58,.12), transparent 60%),
+        linear-gradient(135deg, var(--burgundy-dark) 0%, var(--burgundy) 35%, var(--deep-red) 70%, var(--christmas-red) 100%);
+      min-height: 100vh;
+      color: var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+      letter-spacing: .1px;
+      line-height: 1.6;
+    }
+
+    .preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* Burgundy preloader background */
+      background: linear-gradient(135deg, var(--burgundy-dark) 0%, var(--burgundy) 50%, var(--deep-red) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .preloader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .preloader-logo {
+      max-width: 220px;
+      margin-bottom: 30px;
+      animation: logoFloat 2.5s ease-in-out infinite;
+      filter: drop-shadow(0 10px 30px rgba(255,215,0,.35));
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-14px); }
+    }
+
+    .progress-bar-container {
+      width: 280px;
+      height: 4px;
+      background: rgba(255,215,0,.2);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,.35);
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-accent));
+      background-size: 200% 100%;
+      border-radius: 10px;
+      width: 0%;
+      animation: loadProgress 2s ease-out forwards, shimmerBar 1.5s linear infinite;
+      box-shadow: 0 0 10px rgba(255,215,0,.5);
+    }
+
+    @keyframes loadProgress {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
+
+    @keyframes shimmerBar {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    .loading-text {
+      margin-top: 10px;
+      color: var(--gold-soft);
+      font-size: .85rem;
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-align: center;
+    }
+
+    /* Christmas-themed particles with gold and red colors */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(2px 2px at 20% 30%, rgba(255,215,0,0.4), transparent),
+        radial-gradient(2px 2px at 60% 70%, rgba(196,30,58,0.3), transparent),
+        radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.25), transparent),
+        radial-gradient(3px 3px at 80% 20%, rgba(255,215,0,0.2), transparent);
+      background-size: 200px 200px, 300px 300px, 250px 250px, 180px 180px;
+      animation: particles 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes particles {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-100px); }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      animation: fadeInDown 1s ease;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      max-width: 200px;
+      height: auto;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 4px 20px rgba(255,215,0,.4));
+    }
+
+    .event-badge {
+      display: inline-block;
+      padding: 8px 18px;
+      border-radius: 999px;
+      /* Burgundy badge background */
+      background: linear-gradient(135deg, var(--burgundy), var(--dark-red));
+      font-family: var(--ff-ui);
+      font-size: clamp(.8rem, 2.2vw, .95rem);
+      line-height: 1;
+      letter-spacing: .4px;
+      color: var(--gold);
+      margin-bottom: 18px;
+      box-shadow: 0 4px 20px rgba(128,0,32,.4);
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family: var(--ff-display);
+      font-weight: 700;
+      line-height: 1.12;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      margin-bottom: 14px;
+      letter-spacing: .2px;
+      /* Christmas gold gradient for title */
+      background: linear-gradient(135deg, var(--gold-accent), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      max-width: 620px;
+      margin: 0 auto;
+      color: rgba(255,248,240,.92);
+      font-size: clamp(1rem, 2.2vw, 1.1rem);
+    }
+
+    /* Added sound control button */
+    .sound-control {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      /* Burgundy sound control background */
+      background: rgba(128,0,32,0.9);
+      border: 2px solid var(--gold);
+      color: var(--gold);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .sound-control:hover {
+      background: var(--gold);
+      color: var(--burgundy-dark);
+      transform: scale(1.1);
+    }
+
+    .tree-container {
+      position: relative;
+      max-width: 850px;
+      width: 100%;
+      margin: 0 auto;
+      z-index: 1;
+      animation: fadeInUp 1s ease .25s both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tree-svg {
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+    }
+
+    .boxes-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .box {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(.4,0,.2,1);
+      pointer-events: all;
+      transform-origin: center;
+    }
+
+    .box:hover:not(.locked) {
+      transform: scale(1.15) translateY(-6px);
+    }
+
+    .box.locked {
+      cursor: not-allowed;
+      opacity: 0.5;
+      filter: grayscale(70%);
+    }
+
+    .box.claimed {
+      opacity: 0.7;
+      filter: brightness(0.8);
+    }
+
+    .box-inner {
+      width: 100%;
+      height: 100%;
+      /* Deep red gradient for gift boxes */
+      background: linear-gradient(135deg, #C41E3A 0%, #8B0000 100%);
+      border: 3px solid var(--gold);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 
+        0 10px 30px rgba(255,215,0,.4),
+        0 0 0 1px rgba(255,215,0,.3),
+        inset 0 1px 0 rgba(255,255,255,.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .box.locked .box-inner {
+      background: linear-gradient(135deg, #4a3428 0%, #2d1f18 100%);
+      border-color: #6b5344;
+    }
+
+    .box.claimed .box-inner {
+      background: linear-gradient(135deg, #E63946 0%, #C41E3A 100%);
+    }
+
+    .box-number {
+      font-family: var(--ff-ui);
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: .2px;
+      color: white;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+      z-index: 2;
+    }
+
+    .box.locked .box-number {
+      color: #8b7355;
+    }
+
+    .box-icon {
+      font-size: 1.2rem;
+      position: absolute;
+      bottom: 5px;
+      opacity: 0.6;
+    }
+
+    .box:not(.locked):not(.claimed) .box-inner::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    /* Box positions - same as before */
+    .box[data-day="1"] { top: 9%; left: 50%; transform: translateX(-50%); }
+    .box[data-day="2"] { top: 16%; left: 40%; margin-right: -15px; }
+    .box[data-day="3"] { top: 16%; left: 55%; margin-left: -15px; }
+    .box[data-day="4"] { top: 31%; left: 35%; margin-right: -5px; }
+    .box[data-day="5"] { top: 31%; left: 50%; transform: translateX(-50%); }
+    .box[data-day="6"] { top: 31%; left: 57%; margin-left: -5px; }
+    .box[data-day="7"] { top: 48%; left: 27%; margin-right: -3px; }
+    .box[data-day="8"] { top: 48%; left: 36%; margin-right: -2px; }
+    .box[data-day="9"] { top: 48%; left: 50%; transform: translateX(-50%); }
+    .box[data-day="10"] { top: 48%; left: 55%; margin-left: -2px; }
+    .box[data-day="11"] { top: 48%; left: 64%; margin-left: -3px; }
+    .box[data-day="12"] { top: 66%; left: 23%; margin-right: -2px; }
+    .box[data-day="13"] { top: 66%; left: 32%; margin-right: -1px; }
+    .box[data-day="14"] { top: 66%; left: 42%; margin-right: -1px; }
+    .box[data-day="15"] { top: 66%; left: 51%; margin-left: -1px; }
+    .box[data-day="16"] { top: 66%; left: 61%; margin-left: -1px; }
+    .box[data-day="17"] { top: 66%; left: 70%; margin-left: -2px; }
+    .box[data-day="18"] { top: 86%; left: 19%; }
+    .box[data-day="19"] { top: 86%; left: 28%; }
+    .box[data-day="20"] { top: 86%; left: 37%; }
+    .box[data-day="21"] { top: 86%; left: 46%; }
+    .box[data-day="22"] { top: 86%; left: 55%; }
+    .box[data-day="23"] { top: 86%; left: 63%; }
+    .box[data-day="24"] { top: 86%; left: 72%; }
+    .box[data-day="25"] { top: 93%; left: 50%; transform: translateX(-50%); width: 70px; height: 70px; }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      /* Burgundy modal background */
+      background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%);
+      border: 2px solid var(--gold);
+      border-radius: 22px;
+      padding: clamp(28px, 6vw, 46px);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      box-shadow: 
+        0 30px 80px rgba(0,0,0,.65),
+        0 0 0 1px rgba(255,215,0,.3),
+        inset 0 1px 0 rgba(255,255,255,.08);
+      animation: modalIn .5s cubic-bezier(.68,-.55,.265,1.55);
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(.85) translateY(40px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255,215,0, 0.2);
+      border: 2px solid var(--gold);
+      color: var(--gold-soft);
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      font-family: var(--ff-body);
+    }
+
+    .modal-close:hover {
+      background: var(--gold);
+      color: var(--burgundy-dark);
+      transform: rotate(90deg);
+    }
+
+    .modal-day {
+      font-family: var(--ff-ui);
+      font-size: 1.1rem;
+      color: var(--gold-soft);
+      font-weight: 600;
+      margin-bottom: 12px;
+      letter-spacing: .3px;
+    }
+
+    .modal-prize {
+      font-family: var(--ff-display);
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gold-accent), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 20px 0;
+      letter-spacing: .2px;
+    }
+
+    .modal-message {
+      color: rgba(255,248,240,.9);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-top: 15px;
+    }
+
+    .modal-button {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--burgundy-dark);
+      border: none;
+      padding: 14px 40px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 999px;
+      cursor: pointer;
+      margin-top: 18px;
+      transition: transform .2s ease, box-shadow .2s ease;
+      letter-spacing: .2px;
+      box-shadow: 0 10px 30px rgba(255,215,0,.4);
+      font-family: var(--ff-ui);
+      text-transform: uppercase;
+    }
+
+    .modal-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 38px rgba(255,215,0,.5);
+    }
+
+    .modal-button:active {
+      transform: translateY(0);
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+      z-index: 9999;
+      will-change: top, left, transform, opacity;
+      animation: confettiFall linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .christmas-light {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      box-shadow: 0 0 10px currentColor;
+      z-index: 0;
+    }
+
+    .christmas-light.red {
+      background: #ff6b6b;
+      color: #ff6b6b;
+      animation: twinkle 1.5s infinite;
+    }
+
+    .christmas-light.yellow {
+      background: #ffe66d;
+      color: #ffe66d;
+      animation: twinkle 2s infinite;
+    }
+
+    .christmas-light.blue {
+      background: #4ecdc4;
+      color: #4ecdc4;
+      animation: twinkle 1.8s infinite;
+    }
+
+    .christmas-light.green {
+      background: #95e1d3;
+      color: #95e1d3;
+      animation: twinkle 2.2s infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .box {
+        width: 45px;
+        height: 45px;
+      }
+
+      .box[data-day="25"] {
+        width: 55px;
+        height: 55px;
+      }
+
+      .box-number {
+        font-size: 1.3rem;
+      }
+
+      .box-icon {
+        font-size: 1rem;
+      }
+
+      .header {
+        margin-bottom: 30px;
+      }
+
+      .sound-control {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .box {
+        width: 35px;
+        height: 35px;
+      }
+
+      .box[data-day="25"] {
+        width: 45px;
+        height: 45px;
+      }
+
+      .box-number {
+        font-size: 1rem;
+      }
+
+      .box-icon {
+        font-size: 0.8rem;
+        bottom: 2px;
+      }
+
+      .modal-content {
+        padding: 30px 20px;
+      }
+
+      .preloader-logo {
+        max-width: 180px;
+      }
+
+      .progress-bar-container {
+        width: 250px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .preloader-logo, .header, .tree-container, .box, .modal-content {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="preloader" id="preloader">
+    <img src="assets/image.png" alt="Arkana Games" class="preloader-logo">
+    <div class="progress-bar-container">
+      <div class="progress-bar"></div>
+    </div>
+    <div class="loading-text">Cargando calendario...</div>
+  </div>
+
+  <!-- Added sound control button -->
+  <button class="sound-control" id="soundControl" aria-label="Control de sonido">
+    🔊
+  </button>
+
+  <div class="header">
+    <img src="assets/image.png" alt="Arkana Games" class="logo" id="logo">
+    <h1>Calendario festivo</h1>
+    <p class="subtitle">Celebramos la Navidad con premios exclusivos. Descubrí tu sorpresa dorada cada día.</p>
+  </div>
+
+  <div class="tree-container">
+    <svg class="tree-svg" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="treeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#3d5a3d;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#2d4a2d;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#1d3a1d;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#3a2818;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#5a3828;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#3a2818;stop-opacity:1" />
+        </linearGradient>
+        <radialGradient id="starGradient">
+          <stop offset="0%" style="stop-color:#FFEAA7;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#FFD700;stop-opacity:1" />
+        </radialGradient>
+        <filter id="starGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      
+      <ellipse cx="150" cy="390" rx="140" ry="8" fill="rgba(0,0,0,0.3)" opacity="0.5"/>
+      
+      <path d="M150 30 L105 90 L125 90 L85 155 L110 155 L70 220 L105 220 L55 295 L110 295 L45 375 L255 375 L190 295 L245 295 L195 220 L230 220 L190 155 L215 155 L175 90 L195 90 Z" 
+            fill="url(#treeGradient)" 
+            stroke="#1a2a1a" 
+            stroke-width="2.5"
+            stroke-linejoin="round"/>
+      
+      <path d="M150 30 L105 90 L125 90" 
+            fill="none" 
+            stroke="#e8f4f8" 
+            stroke-width="4" 
+            stroke-linecap="round" 
+            opacity="0.6"/>
+      <path d="M85 155 L110 155" 
+            fill="none" 
+            stroke="#e8f4f8" 
+            stroke-width="5" 
+            stroke-linecap="round" 
+            opacity="0.6"/>
+      <path d="M70 220 L105 220" 
+            fill="none" 
+            stroke="#e8f4f8" 
+            stroke-width="5" 
+            stroke-linecap="round" 
+            opacity="0.6"/>
+      
+      <circle cx="130" cy="110" r="3" fill="#ff6b6b" opacity="0.8">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="170" cy="120" r="3" fill="#4ecdc4" opacity="0.8">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="2.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="110" cy="170" r="3" fill="#ffe66d" opacity="0.8">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="1.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="190" cy="180" r="3" fill="#ff6b6b" opacity="0.8">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="2.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="90" cy="240" r="3" fill="#4ecdc4" opacity="0.8">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="210" cy="250" r="3" fill="#ffe66d" opacity="0.8">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="2.4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="70" cy="310" r="3" fill="#ff6b6b" opacity="0.8">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="1.9s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="230" cy="320" r="3" fill="#4ecdc4" opacity="0.8">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="2.1s" repeatCount="indefinite"/>
+      </circle>
+      
+      <rect x="125" y="375" width="50" height="25" 
+            fill="url(#trunkGradient)" 
+            stroke="#2d1f18" 
+            stroke-width="2"
+            rx="2"/>
+      
+      <g filter="url(#starGlow)">
+        <path d="M150 8 L156 22 L171 22 L159 31 L164 45 L150 36 L136 45 L141 31 L129 22 L144 22 Z" 
+              fill="url(#starGradient)" 
+              stroke="#FFD700" 
+              stroke-width="2">
+        </path>
+      </g>
+    </svg>
+
+    <div class="boxes-container" id="boxesContainer"></div>
+    <div class="christmas-lights-container" id="christmasLightsContainer"></div>
+  </div>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalPrize">
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose" aria-label="Cerrar">&times;</button>
+      <div class="modal-day" id="modalDay"></div>
+      <div class="modal-prize" id="modalPrize"></div>
+      <div class="modal-message" id="modalMessage"></div>
+      <button class="modal-button" onclick="closeModal()">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Updated audio to use assets folder instead of URLs -->
+  <audio id="backgroundMusic" loop preload="auto">
+    <source src="assets/background-music.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="prizeSound" preload="auto">
+    <source src="assets/prize-sound.mp3" type="audio/mpeg">
+  </audio>
+  
+  <script>
+    // ---------------- AUDIO Y PRELOADER ----------------
+    let isMusicPlaying = false;
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const prizeSound = document.getElementById('prizeSound');
+    const soundControl = document.getElementById('soundControl');
+  
+    // Cuando la página termina de cargar
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const preloader = document.getElementById('preloader');
+        if (preloader) {
+          preloader.classList.add('hidden');   // 👈 esto saca la pantalla de carga
+        }
+  
+        if (backgroundMusic) {
+          backgroundMusic.volume = 0.7;        // volumen más bajo
+        }
+  
+        if (soundControl) {
+          soundControl.textContent = '🔇';     // empieza mute
+        }
+      }, 2100);
+    });
+  
+    function toggleBackgroundMusic() {
+      if (!backgroundMusic || !soundControl) return;
+  
+      if (isMusicPlaying) {
+        backgroundMusic.pause();
+        soundControl.textContent = '🔇';
+        isMusicPlaying = false;
+      } else {
+        backgroundMusic.currentTime = 0;
+        backgroundMusic.play()
+          .then(() => {
+            soundControl.textContent = '🔊';
+            isMusicPlaying = true;
+          })
+          .catch(err => {
+            console.log('Error al reproducir música:', err);
+          });
+      }
+    }
+  
+    if (soundControl) {
+      soundControl.addEventListener('click', toggleBackgroundMusic);
+    }
+  
+    // ---------------- LUCES DE NAVIDAD ----------------
+    function createChristmasLights() {
+      const lightsContainer = document.getElementById('christmasLightsContainer');
+      const colors = ['red', 'yellow', 'blue', 'green'];
+  
+      const lightPositions = [
+        { top: '15%', left: '44%' },
+        { top: '15%', left: '50%' },
+        { top: '15%', left: '55%' },
+        { top: '27%', left: '40%' },
+        { top: '27%', left: '47%' },
+        { top: '27%', left: '52%' },
+        { top: '27%', left: '58%' },
+        { top: '44%', left: '33%' },
+        { top: '44%', left: '38%' },
+        { top: '44%', left: '44%' },
+        { top: '44%', left: '50%' },
+        { top: '44%', left: '55%' },
+        { top: '44%', left: '60%' },
+        { top: '44%', left: '66%' },
+        { top: '60%', left: '30%' },
+        { top: '60%', left: '34%' },
+        { top: '60%', left: '39%' },
+        { top: '60%', left: '44%' },
+        { top: '60%', left: '50%' },
+        { top: '60%', left: '55%' },
+        { top: '60%', left: '60%' },
+        { top: '60%', left: '65%' },
+        { top: '60%', left: '69%' },
+        { top: '80%', left: '30%' },
+        { top: '80%', left: '36%' },
+        { top: '80%', left: '42%' },
+        { top: '80%', left: '47%' },
+        { top: '80%', left: '51%' },
+        { top: '80%', left: '56%' },
+        { top: '80%', left: '62%' },
+        { top: '80%', left: '69%' }
+      ];
+  
+      lightPositions.forEach((pos, index) => {
+        const light = document.createElement('div');
+        light.className = `christmas-light ${colors[index % colors.length]}`;
+        light.style.top = pos.top;
+        light.style.left = pos.left;
+        light.style.animationDelay = (Math.random() * 2) + 's';
+        lightsContainer.appendChild(light);
+      });
+    }
+  
+    // ---------------- PREMIOS Y CALENDARIO ----------------
+    const dailyPrizes = {
+      1: '🎁 BONO DEL 50%',
+      2: '🎁 BONO SORPRESA',
+      3: '🎁 BONO DEL 150%',
+      4: '💥 BONO DEL 100%',
+      5: '💸 1.000 FICHAS GRATIS',
+      6: '💸 2.000 FICHAS GRATIS',
+      7: '💸 3.000 FICHAS GRATIS',
+      8: '💸 10% DE CASHBACK',
+      9: '💸 20% DE CASHBACK',
+      10: '🎉 BONO + FICHAS GRATIS',
+      11: '🎁 BONO A ELECCIÓN',
+      12: '🎁 REGALO SORPRESA',
+      13: '🎁 REGALO SORPRESA SI PERTENCES A LA COMUNIDAD',
+      14: '🎁 REGALO SORPRESA SI NOS TENES AGENDADOS',
+      15: '🔥 S0RTEO',
+      16: '🎁 HAPPY HOUR PERSONAL',
+      17: '💥 REFERIDOS',
+      18: '🎁 BONO DEL 50%',
+      19: '🎁 BONO DEL 100%',
+      20: '💸 5.000 FICHAS GRATIS',
+      21: '💥 BONO DEL 150%',
+      22: '🎁 BONO DEL 100%',
+      23: '🔥 BONO DEL 200%',
+      24: '🎉 2.500 FICHAS GRATIS',
+      25: '💸 5.000 FICHAS GRATIS'
+    };
+  
+    function getCurrentDay() {
+      const now = new Date();
+      if (now.getMonth() === 11) return now.getDate(); // diciembre
+      return 1; // para probar fuera de diciembre
+    }
+  
+    const STORAGE_KEY = 'advent_calendar_claims_arkana';
+  
+    function getClaimedDays() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      try {
+        return data ? JSON.parse(data) : {};
+      } catch (e) {
+        console.log('Error parseando localStorage, lo reseteo:', e);
+        localStorage.removeItem(STORAGE_KEY);
+        return {};
+      }
+    }
+  
+    function saveClaim(day, prize) {
+      const claims = getClaimedDays();
+      claims[day] = {
+        prize: prize,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(claims));
+    }
+  
+    function isDayClaimed(day) {
+      const claims = getClaimedDays();
+      return claims.hasOwnProperty(day);
+    }
+  
+    function getClaimedPrize(day) {
+      const claims = getClaimedDays();
+      return claims[day]?.prize || null;
+    }
+  
+    function createBoxes() {
+      const container = document.getElementById('boxesContainer');
+      const currentDay = getCurrentDay();
+  
+      for (let day = 1; day <= 25; day++) {
+        const box = document.createElement('div');
+        box.className = 'box';
+        box.setAttribute('data-day', day);
+  
+        const locked = day !== currentDay;
+        const claimed = isDayClaimed(day);
+  
+        if (locked) box.classList.add('locked');
+        if (claimed) box.classList.add('claimed');
+  
+        box.innerHTML = `
+          <div class="box-inner">
+            <div class="box-number">${day}</div>
+            <div class="box-icon">${claimed ? '✓' : (locked ? '🔒' : '🎁')}</div>
+          </div>
+        `;
+  
+        if (!locked) {
+          box.addEventListener('click', () => openBox(day));
+        }
+  
+        container.appendChild(box);
+      }
+    }
+  
+    function openBox(day) {
+      const claimed = isDayClaimed(day);
+      let prize;
+  
+      if (claimed) {
+        prize = getClaimedPrize(day);
+      } else {
+        prize = dailyPrizes[day];
+        saveClaim(day, prize);
+  
+        const box = document.querySelector(`.box[data-day="${day}"]`);
+        if (box) {
+          box.classList.add('claimed');
+          box.querySelector('.box-icon').textContent = '✓';
+        }
+  
+        launchConfetti();
+  
+        if (isMusicPlaying && backgroundMusic) {
+          backgroundMusic.pause();
+        }
+  
+        if (prizeSound) {
+          prizeSound.play().catch(() => {
+            console.log('[v0] Prize sound failed to play');
+          });
+        }
+      }
+  
+      showModal(day, prize, claimed);
+    }
+  
+    function showModal(day, prize, alreadyClaimed) {
+      const modal = document.getElementById('modal');
+      const modalDay = document.getElementById('modalDay');
+      const modalPrize = document.getElementById('modalPrize');
+      const modalMessage = document.getElementById('modalMessage');
+  
+      modalDay.textContent = `Día ${day} de Diciembre`;
+      modalPrize.textContent = prize;
+  
+      if (alreadyClaimed) {
+        modalMessage.innerHTML = '¡Ya reclamaste este premio!<br>Tu premio ha sido acreditado. Vuelve mañana por uno nuevo.';
+      } else {
+        modalMessage.innerHTML = '¡Felicitaciones!<br>Tu premio ha sido acreditado. ¡Disfrutá de este regalo especial!';
+      }
+  
+      modal.classList.add('active');
+    }
+  
+    function closeModal() {
+      const modal = document.getElementById('modal');
+      modal.classList.remove('active');
+  
+      if (isMusicPlaying && backgroundMusic) {
+        backgroundMusic.play().catch(() => {});
+      }
+    }
+  
+    const modalCloseBtn = document.getElementById('modalClose');
+    if (modalCloseBtn) {
+      modalCloseBtn.addEventListener('click', closeModal);
+    }
+  
+    const modalOverlay = document.getElementById('modal');
+    if (modalOverlay) {
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target.id === 'modal') closeModal();
+      });
+    }
+  
+    function launchConfetti() {
+      const colors = ['#FFD700', '#C5A028', '#F4E4C1', '#C41E3A', '#FFFFFF'];
+      for (let i = 0; i < 100; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * 100 + 'vw';
+          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+          confetti.style.animationDelay = (Math.random() * 0.5) + 's';
+          document.body.appendChild(confetti);
+  
+          setTimeout(() => confetti.remove(), 5000);
+        }, i * 30);
+      }
+    }
+  
+    // Inicializar árbol y luces
+    createBoxes();
+    createChristmasLights();
+  </script>
+
+
+</body>
+</html>
